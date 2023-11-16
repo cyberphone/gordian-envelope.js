@@ -5,6 +5,7 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "envelope-cli", "envelope-cli", "{2C539431-D804-4478-8943-0E7672B837A7}"
 	ProjectSection(SolutionItems) = preProject
+		envelope-cli\bytewords-creator.js = envelope-cli\bytewords-creator.js
 		envelope-cli\envelope.js = envelope-cli\envelope.js
 		envelope-cli\package.json = envelope-cli\package.json
 	EndProjectSection
