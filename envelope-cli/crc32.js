@@ -56,11 +56,11 @@ const CRC32_TABLE = [
 
 function crc32 (byteArray) {
   let crc = -1;
-  for(let i = 0, iTop = byteArray.length; i < iTop; i++) {
-    crc = (crc >>> 8) ^ CRC32_TABLE[(crc ^ byteArray[i]) & 0xff];
-  }
+  byteArray.forEach(byte => {
+    crc = (crc >>> 8) ^ CRC32_TABLE[(crc ^ byte) & 0xff];
+  });
+  crc ^= 0xffffffff;
   let result = new Uint8Array(4);
-  crc = (crc ^ (-1)) >>> 0;
   for (let i = 3; i >= 0; i--) {
     result[i] = crc;
     crc >>>= 8;

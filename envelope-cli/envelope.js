@@ -125,6 +125,7 @@ function strip(argNo, argEqual) {
 }
 
 function byteWordsEncode(byteArray) {
+ // console.log(CBOR.toHex(byteArray));
   byteArray = CBOR.addArrays(byteArray, crc32(byteArray));
   let byteWords = "";
   byteArray.forEach(byte => {
@@ -148,16 +149,19 @@ function byteWordsDecode(byteWords) {
     if (byte < 0) fatal("invalid ByteWord");
     binaryArray[i++] = byte;
   }
-  return binaryArray;
+  let result = binaryArray.subarray(0, binaryArray.length - 4);
+  if (!CBOR.compareArrays(crc32(result), binaryArray.subarray(binaryArray.length - 5))) fatal("crc32 mismatch");
+  // console.log(CBOR.toHex(result));
+  return result;
 }
 
 function crc32 (byteArray) {
   let crc = -1;
-  for(let i = 0, iTop = byteArray.length; i < iTop; i++) {
-    crc = (crc >>> 8) ^ CRC32_TABLE[(crc ^ byteArray[i]) & 0xff];
-  }
+  byteArray.forEach(byte => {
+    crc = (crc >>> 8) ^ CRC32_TABLE[(crc ^ byte) & 0xff];
+  });
+  crc ^= 0xffffffff;
   let result = new Uint8Array(4);
-  crc = (crc ^ (-1)) >>> 0;
   for (let i = 3; i >= 0; i--) {
     result[i] = crc;
     crc >>>= 8;
@@ -166,15 +170,14 @@ function crc32 (byteArray) {
 }
 
 function getEnvelope(atIndex) {
-  let cborObject = CBOR.decode(byteWordsDecode(strip(atIndex, "ur:envelope/")));
-  if (cborObject.getTagNumber() != ENVELOPE_TAG) fatal("envelope tag missing");
-  return cborObject;
+  return CBOR.Tag(ENVELOPE_TAG, CBOR.decode(byteWordsDecode(strip(atIndex, "ur:envelope/"))));
 }
 
 function subjectCommand() {
-  testArg(3);
-  let type = strip(1, "type=");
-  let argument = args[2];
+  testArg(4);
+  if (args[1] != "type") fatal("missing \"type\" argument");
+  let type = args[2];
+  let argument = args[3];
   let cborObject;
   switch (type) {
     case "cborObject":
@@ -217,8 +220,8 @@ function subjectCommand() {
     default:
       fatal("unknown type: " + type);
   }
-  let envelope = CBOR.Tag(ENVELOPE_TAG, CBOR.Tag(SUBJECT_TAG, cborObject)).encode();
-  console.log(ENVELOPE_UR + byteWordsEncode(envelope));
+  let envelope = CBOR.Tag(SUBJECT_TAG, cborObject).encode();
+  process.stdout.write(ENVELOPE_UR + byteWordsEncode(envelope));
 }
 
 function formatCommand() {
@@ -253,8 +256,8 @@ function formatCommand() {
 
 // Here it all begins...
 if (args.length == 0) {
-  console.log("envelope subject type={cbor|diag|data|date|uri|number} argument\n\
-         format {--type cbor|diag} ur:envelope/ccccc");
+  console.log("envelope subject type {cbor|diag|data|date|uri|number} argument\n\
+         format [--type {cbor|diag}] ur:envelope/ccccc");
   process.exit(3);
 }
 let command = args[0];
