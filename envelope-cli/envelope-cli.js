@@ -1,6 +1,7 @@
 // Gordian Envelope CLI
 import CBOR from 'cbor-object';
 import Crypto from 'node:crypto';
+import fs from 'fs';
 
 const ENVELOPE_TAG = 200n;
 const SUBJECT_TAG  = 24n;
@@ -113,12 +114,17 @@ function fatal(message) {
   process.exit(3);
 }
 
-function testArg(numberOf) {
-  if (args.length != numberOf) fatal("expected " + numberOf + " arguments");
+function getLastArgument(index) {
+  if (args.length > index + 1) fatal("unexpected argument: " + args[index + 1]);
+  return (args.length == index ? fs.readFileSync(process.stdin.fd, "utf-8") : args[index]).trim();
 }
 
-function strip(argNo, argEqual) {
-  let arg = args[argNo];
+function getArgument(index) {
+  if (index >= args.length) fatal("missing argument");
+  return args[index].trim();
+}
+
+function strip(arg, argEqual) {
   if (arg.length <= argEqual.length || arg.substring(0, argEqual.length) != argEqual) {
     fatal("expected '" + argEqual + "argument'");
   }
@@ -171,14 +177,14 @@ function crc32 (byteArray) {
 }
 
 function getEnvelope(atIndex) {
-  return CBOR.Tag(ENVELOPE_TAG, CBOR.decode(byteWordsDecode(strip(atIndex, "ur:envelope/"))));
+  return CBOR.Tag(ENVELOPE_TAG, 
+                  CBOR.decode(byteWordsDecode(strip(getLastArgument(atIndex), "ur:envelope/"))));
 }
 
 function subjectCommand() {
-  testArg(4);
-  if (args[1] != "type") fatal("missing \"type\" argument");
-  let type = args[2];
-  let argument = args[3];
+  if (getArgument(1) != "type") fatal("missing \"type\" argument");
+  let type = getArgument(2);
+  let argument = getLastArgument(3);
   let cborObject;
   switch (type) {
     case "cborObject":
@@ -228,13 +234,12 @@ function subjectCommand() {
 function formatCommand() {
   let type;
   let cborObject;
-  if (args.length == 2) {
+  if (args.length <= 2) {
     type = "envelope";
     cborObject = getEnvelope(1);
   } else {
-    testArg(4);
-    if (args[1] != "--type") fatal("\"--type\" missing");
-    type = args[2];
+    if (getArgument(1) != "--type") fatal("\"--type\" missing");
+    type = getArgument(2);
     cborObject = getEnvelope(3);
   }
   switch (type) {
@@ -256,15 +261,13 @@ function formatCommand() {
 }
 
 function digestCommand() {
-  testArg(2);
   const hash = Crypto.createHash('sha256');
   hash.update(getEnvelope(1).getTaggedObject().encode());
   console.log(byteWordsEncode(new Uint8Array(hash.digest())));
 }
 
 function rawCommand() {
-  testArg(2);
-  let argument = args[1];
+  let argument = getLastArgument(1);
   let index = argument.indexOf("/");
   console.log(CBOR.toHex(byteWordsDecode(index >= 0 ? argument.substring(index + 1) : argument)));
 }

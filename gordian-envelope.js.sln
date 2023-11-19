@@ -5,15 +5,32 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "envelope-cli", "envelope-cli", "{2C539431-D804-4478-8943-0E7672B837A7}"
 	ProjectSection(SolutionItems) = preProject
-		envelope-cli\bytewords-creator.js = envelope-cli\bytewords-creator.js
-		envelope-cli\crc32.js = envelope-cli\crc32.js
-		envelope-cli\envelope.js = envelope-cli\envelope.js
 		envelope-cli\package.json = envelope-cli\package.json
+		envelope-cli\envelope-cli.js = envelope-cli\envelope-cli.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D32D922C-51BA-4A8B-9E76-C6BD3F22A98D}"
+	ProjectSection(SolutionItems) = preProject
+		envelope-cli\test\bytewords-creator.js = envelope-cli\test\bytewords-creator.js
+		envelope-cli\test\crc32.js = envelope-cli\test\crc32.js
+		envelope-cli\test\diag.txt = envelope-cli\test\diag.txt
+		envelope-cli\test\envelope.txt = envelope-cli\test\envelope.txt
+		envelope-cli\test\ioplay.js = envelope-cli\test\ioplay.js
+		envelope-cli\test\parm.txt = envelope-cli\test\parm.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Global files", "Global files", "{34754FB6-B496-46A4-A832-F9A6BB406C62}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D32D922C-51BA-4A8B-9E76-C6BD3F22A98D} = {2C539431-D804-4478-8943-0E7672B837A7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CA47867D-F331-49B8-B25E-F6DF9AF083DF}
