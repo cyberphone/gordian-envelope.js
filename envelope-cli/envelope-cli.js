@@ -266,18 +266,24 @@ function digestCommand() {
   console.log(byteWordsEncode(new Uint8Array(hash.digest())));
 }
 
-function rawCommand() {
+function bw2hexCommand() {
   let argument = getLastArgument(1);
   let index = argument.indexOf("/");
   console.log(CBOR.toHex(byteWordsDecode(index >= 0 ? argument.substring(index + 1) : argument)));
 }
 
+function hex2bwCommand() {
+  console.log(byteWordsEncode(CBOR.fromHex(getLastArgument(1))));
+}
+
 // Here it all begins...
 if (args.length == 0) {
-  console.log("\nenvelope subject type {cbor|diag|data|date|uri|number} argument\n\
+  console.log("\n\
+envelope subject type {cbor|diag|data|date|uri|number} argument\n\
          format [--type {cbor|diag}] ur:envelope/ccccc\n\
          digest ur:envelope/ccccc\n\
-         raw [ur:xxxxx/]ccccc");
+         bw2hex [ur:xxxxx/]ccccc\n\
+         hex2bw hhhhhh");
   process.exit(3);
 }
 let command = args[0];
@@ -294,8 +300,12 @@ switch (command) {
     digestCommand();
     break;
 
-  case "raw":
-    rawCommand();
+  case "bw2hex":
+    bw2hexCommand();
+    break;
+
+  case "hex2bw":
+    hex2bwCommand();
     break;
 
   default:
