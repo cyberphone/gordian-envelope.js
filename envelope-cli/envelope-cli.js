@@ -1,5 +1,6 @@
 // Gordian Envelope CLI
 import CBOR from 'cbor-object';
+import Crypto from 'node:crypto';
 
 const ENVELOPE_TAG = 200n;
 const SUBJECT_TAG  = 24n;
@@ -143,14 +144,14 @@ function byteWordsDecode(byteWords) {
   if (length <= 8) fatal("missing ByteWord checksum");
   if (length & 1) fatal("uneven number of ByteWord characters");
   if (!byteWords.match(/^[a-z]+?$/)) fatal("invalid ByteWord characters");
-  let binaryArray = new Uint8Array(length >> 1);
+  let bytes = new Uint8Array(length >> 1);
   for (let i = 0, q = 0; q < length;) {
     let byte = FROM_BYTEWORDS[(convertToNum(byteWords, q++) * 26) + convertToNum(byteWords, q++)];
     if (byte < 0) fatal("invalid ByteWord");
-    binaryArray[i++] = byte;
+    bytes[i++] = byte;
   }
-  let result = binaryArray.subarray(0, binaryArray.length - 4);
-  if (!CBOR.compareArrays(crc32(result), binaryArray.subarray(binaryArray.length - 5))) fatal("crc32 mismatch");
+  let result = bytes.subarray(0, bytes.length - 4);
+  if (CBOR.compareArrays(crc32(result), bytes.subarray(result.length))) fatal("crc32 mismatch");
   // console.log(CBOR.toHex(result));
   return result;
 }
@@ -254,10 +255,26 @@ function formatCommand() {
   }
 }
 
+function digestCommand() {
+  testArg(2);
+  const hash = Crypto.createHash('sha256');
+  hash.update(getEnvelope(1).getTaggedObject().encode());
+  console.log(byteWordsEncode(new Uint8Array(hash.digest())));
+}
+
+function rawCommand() {
+  testArg(2);
+  let argument = args[1];
+  let index = argument.indexOf("/");
+  console.log(CBOR.toHex(byteWordsDecode(index >= 0 ? argument.substring(index + 1) : argument)));
+}
+
 // Here it all begins...
 if (args.length == 0) {
-  console.log("envelope subject type {cbor|diag|data|date|uri|number} argument\n\
-         format [--type {cbor|diag}] ur:envelope/ccccc");
+  console.log("\nenvelope subject type {cbor|diag|data|date|uri|number} argument\n\
+         format [--type {cbor|diag}] ur:envelope/ccccc\n\
+         digest ur:envelope/ccccc\n\
+         raw [ur:xxxxx/]ccccc");
   process.exit(3);
 }
 let command = args[0];
@@ -268,6 +285,14 @@ switch (command) {
 
   case "format":
     formatCommand();
+    break;
+
+  case "digest":
+    digestCommand();
+    break;
+
+  case "raw":
+    rawCommand();
     break;
 
   default:
