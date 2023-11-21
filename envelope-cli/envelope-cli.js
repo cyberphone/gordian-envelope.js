@@ -116,7 +116,12 @@ function fatal(message) {
 
 function getLastArgument(index) {
   if (args.length > index + 1) fatal("unexpected argument: " + args[index + 1]);
-  return (args.length == index ? fs.readFileSync(process.stdin.fd, "utf-8") : args[index]).trim();
+  if (args.length == index) {
+    if (process.stdin.isTTY) getArgument(index);
+    return fs.readFileSync(process.stdin.fd, "utf-8").trim(); 
+  } else {
+    return args[index].trim();
+  }
 }
 
 function getArgument(index) {
