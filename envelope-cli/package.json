@@ -1,9 +1,9 @@
 {
-  "dependencies": {
-    "cbor-object": "^1.0.2"
-  },
   "type": "module",
   "devDependencies": {
     "eslint": "^8.53.0"
+  },
+  "dependencies": {
+    "cbor-object": "^1.0.3"
   }
 }
